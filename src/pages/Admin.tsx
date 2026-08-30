@@ -478,7 +478,12 @@ export default function Admin() {
   const [health, setHealth] = useState<Awaited<ReturnType<typeof getSystemHealth>> | null>(null);
   // KPI-drilldown: op welke tegel is geklikt en welke profielen horen daarbij.
   const [kpiDrill, setKpiDrill] = useState<{
-    metric: Parameters<typeof getSystemHealthRows>[0]["data"]["metric"];
+    metric:
+      | "activeUsers"
+      | "pendingVerifications"
+      | "incompletePayments"
+      | "pendingSepaPayments"
+      | "failedAliasSyncs";
     label: string;
   } | null>(null);
   const [kpiRows, setKpiRows] = useState<Awaited<ReturnType<typeof getSystemHealthRows>> | null>(
