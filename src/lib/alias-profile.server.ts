@@ -192,6 +192,7 @@ export async function writeAliasProfile(userId: string, input: AliasProfileInput
 export async function readPublicAliasProfile(rawHandle: string) {
   const handle = normalizeHandle(rawHandle);
   if (!handle) return null;
+  await ensureAliasTable();
   const rows = (await sql`
     select a.user_id as id, a.handle as username, a.display_name, a.tagline, a.bio,
            a.avatar_url, a.favicon_url, a.theme, a.card_style, a.blocks,
