@@ -30,6 +30,10 @@ export const MSG_RESERVED =
 export const MSG_ALIAS_DIGITS =
   "❗ Een privacy-alias moet minstens 2 cijfers bevatten (bijv. alias99).";
 
+/** Vriendelijkere variant voor het aliasformulier zelf. */
+export const ALIAS_DIGITS_HINT =
+  "⚠️ Een privacy-alias is vrij te kiezen, maar moet minstens 2 cijfers bevatten (bijv. jona50).";
+
 export interface StrictHandleOptions {
   /** Privacy-alias op `/u/` — vereist minstens 2 cijfers. */
   alias?: boolean;
