@@ -146,6 +146,7 @@ export async function isAliasHandleFree(rawHandle: string, userId: string | null
 }
 
 export async function writeAliasProfile(userId: string, input: AliasProfileInput) {
+  await ensureAliasTable();
   const handle = normalizeHandleForStorage(input.username);
   if (!handle) throw new Error("handle_invalid");
   if (isReservedHandle(handle)) throw new Error("handle_reserved");
