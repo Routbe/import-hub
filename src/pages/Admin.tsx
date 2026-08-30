@@ -124,6 +124,14 @@ import type { UserSegment } from "@/lib/admin-segments";
 
 type Pending = Awaited<ReturnType<typeof listPendingVerifications>>[number];
 type UserRow = Awaited<ReturnType<typeof listUsers>>["rows"][number];
+
+/** KPI-tegels waarop een admin kan doorklikken naar de onderliggende profielen. */
+type KpiMetric =
+  | "activeUsers"
+  | "pendingVerifications"
+  | "incompletePayments"
+  | "pendingSepaPayments"
+  | "failedAliasSyncs";
 type AuditRow = Awaited<ReturnType<typeof listAuditLogPage>>["rows"][number];
 type Checklist = Awaited<ReturnType<typeof getDeploymentChecklist>>;
 
