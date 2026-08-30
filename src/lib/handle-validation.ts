@@ -6,7 +6,11 @@
  * bestaan?"). Tier-regels (gratis vs. geverifieerd) blijven in `handle-rules`.
  */
 
-import { isReservedHandle, normalizeHandleForStorage } from "./handle-rules-bridge";
+import { normalizeHandleForStorage } from "./handle-rules";
+import { isReservedHandle } from "./reserved-slugs";
+
+/** Extra systeemwoorden bovenop de routelijst. */
+const EXTRA_RESERVED = new Set(["u", "rout", "routbe", "studio", "settings", "api", "admin"]);
 
 export const STRICT_HANDLE_MIN = 3;
 export const STRICT_HANDLE_MAX = 30;
