@@ -106,6 +106,8 @@ import {
 } from "@/components/ui/accordion";
 import { AvatarFramePicker } from "@/components/studio/AvatarFramePicker";
 import { VERIFIED_STRUCTURE_MESSAGE } from "@/lib/verified-handle";
+import { strictHandleIssue } from "@/lib/handle-validation";
+import { HandleErrorBanner } from "@/components/HandleValidationMessage";
 import { VerifiedHandleBuilder } from "@/components/settings/VerifiedHandleBuilder";
 import { FavoritesEditor } from "@/components/dashboard/FavoritesEditor";
 import { MAX_FAVORITES } from "@/lib/favorites";
@@ -391,8 +393,14 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
     legalName,
     identityMode: prefs.identityMode,
   };
+  // Strikte platformregels (tekens, lengte, systeemwoorden, alias-cijfers) —
+  // deze blokkeren het opslaan volledig.
+  const strictIssue = strictHandleIssue(handle, { alias });
   const handleProblem = normalized ? handleIssue(normalized, handleCtx) : null;
-  const handleOk = isValidHandle(normalized) && !reserved && !handleProblem;
+  const handleOk =
+    isValidHandle(normalized) && !reserved && !handleProblem && !strictIssue;
+  /** Een reeds opgeslagen handle die niet meer aan de richtlijnen voldoet. */
+  const storedHandleInvalid = claimed ? strictHandleIssue(claimed, { alias }) : null;
   // Volg de actieve identiteitsruimte; schone root-URLs blijven Pro-only.
   const urlStyle = alias ? "u" : effectiveUrlStyle(
     identitySpace === "verified" ? "clean" : rawUrlStyle === "clean" || rawUrlStyle === "clean_at" ? "u" : rawUrlStyle,
@@ -1903,6 +1911,7 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
                     className="input-field h-11 min-w-0 flex-1 rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-[invalid=true]:border-destructive"
                   />
                 </div>
+                {strictIssue && <HandleErrorBanner message={strictIssue} className="mt-3" />}
                 {normalized && (
                   <p className="mt-2 break-all text-xs">
                     {!handleOk ? (
