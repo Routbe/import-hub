@@ -371,6 +371,7 @@ export default function Admin() {
   const loadInbound = useServerFn(listInboundPayments);
   const exportInboundChunkFn = useServerFn(exportInboundChunk);
   const loadHealth = useServerFn(getSystemHealth);
+  const loadHealthRows = useServerFn(getSystemHealthRows);
   const bulkVip = useServerFn(bulkGrantVipToUsers);
   const bulkRetryAliasFn = useServerFn(bulkRetryAlias);
   const matchReference = useServerFn(matchPaymentReference);
