@@ -1,5 +1,6 @@
 import { BadgeCheck } from "lucide-react";
 import { HumanLinkedIcon } from "@/components/profile/HumanLinkedIcon";
+import { PrivacyShieldBadge } from "@/components/profile/PrivacyShieldBadge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { monthYear } from "@/components/profile/VerifiedBadgePopover";
 import { useI18n } from "@/lib/i18n";
