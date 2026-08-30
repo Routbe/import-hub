@@ -127,6 +127,8 @@ export async function isAliasHandleFree(rawHandle: string, userId: string | null
   const handle = normalizeHandle(rawHandle);
   if (!handle) return { ok: false, reason: "invalid" as const };
   if (isReservedHandle(handle)) return { ok: false, reason: "reserved" as const };
+  await ensureAliasTable();
+
 
   const rootRows = (await sql`
     select id from public.profiles where lower(username) = ${handle} limit 1
@@ -144,6 +146,7 @@ export async function isAliasHandleFree(rawHandle: string, userId: string | null
 }
 
 export async function writeAliasProfile(userId: string, input: AliasProfileInput) {
+  await ensureAliasTable();
   const handle = normalizeHandleForStorage(input.username);
   if (!handle) throw new Error("handle_invalid");
   if (isReservedHandle(handle)) throw new Error("handle_reserved");
@@ -189,6 +192,7 @@ export async function writeAliasProfile(userId: string, input: AliasProfileInput
 export async function readPublicAliasProfile(rawHandle: string) {
   const handle = normalizeHandle(rawHandle);
   if (!handle) return null;
+  await ensureAliasTable();
   const rows = (await sql`
     select a.user_id as id, a.handle as username, a.display_name, a.tagline, a.bio,
            a.avatar_url, a.favicon_url, a.theme, a.card_style, a.blocks,
