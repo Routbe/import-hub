@@ -7,7 +7,7 @@
  */
 
 import { normalizeHandleForStorage } from "./handle-rules";
-import { isReservedHandle } from "./reserved-slugs";
+import { isReservedSlug } from "./reserved-slugs";
 
 /** Extra systeemwoorden bovenop de routelijst. */
 const EXTRA_RESERVED = new Set(["u", "rout", "routbe", "studio", "settings", "api", "admin"]);
@@ -53,7 +53,7 @@ export function strictHandleIssue(
   if (handle.length < STRICT_HANDLE_MIN || handle.length > STRICT_HANDLE_MAX) return MSG_LENGTH;
   if (/(\.\.|--|__)/.test(handle)) return MSG_REPEAT;
   if (/^[._-]|[._-]$/.test(handle)) return MSG_EDGES;
-  if (isReservedHandle(handle)) return MSG_RESERVED;
+  if (isReservedSlug(handle) || EXTRA_RESERVED.has(handle)) return MSG_RESERVED;
   if (options.alias && (handle.match(/[0-9]/g) ?? []).length < ALIAS_MIN_DIGITS) {
     return MSG_ALIAS_DIGITS;
   }
