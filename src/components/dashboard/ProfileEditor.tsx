@@ -107,6 +107,8 @@ import {
 import { AvatarFramePicker } from "@/components/studio/AvatarFramePicker";
 import { VERIFIED_STRUCTURE_MESSAGE } from "@/lib/verified-handle";
 import { strictHandleIssue } from "@/lib/handle-validation";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { HandleErrorBanner } from "@/components/HandleValidationMessage";
 import { VerifiedHandleBuilder } from "@/components/settings/VerifiedHandleBuilder";
 import { FavoritesEditor } from "@/components/dashboard/FavoritesEditor";
@@ -239,6 +241,8 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [dirty, setDirty] = useState(false);
+  const queryClient = useQueryClient();
+  const router = useRouter();
   const [handle, setHandle] = useState("");
   const [claimed, setClaimed] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState("");
@@ -527,6 +531,10 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
       return toast.error(result.reason ?? "Saving failed");
     }
     setClaimed(normalized);
+    // Handle direct live: publieke cache leegmaken zodat rout.be/<handle>
+    // meteen rendert zonder herlaad of serverherstart.
+    void queryClient.invalidateQueries({ queryKey: ["public-profile", normalized] });
+    void router.invalidate();
     setDirty(false);
     setSavedAt(Date.now());
     if (!silent) toast.success("Studio saved");
@@ -682,6 +690,9 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
 
   return (
     <div className={cn("flex flex-1 flex-col space-y-4", showSaveBar && "pb-16 lg:pb-4")}>
+      {storedHandleInvalid && (
+        <HandleErrorBanner message="Je huidige gebruikersnaam voldoet niet aan de nieuwe richtlijnen. Kies een nieuwe geldige handle om je profiel online te houden." />
+      )}
       {/* Compacte studiokop: tier-balk en tabs blijven bij het scrollen staan en
           nemen samen nauwelijks hoogte in, zodat de live preview hoger begint. */}
       {/* RIJ 1 — profielstatus & URL-balk */}
