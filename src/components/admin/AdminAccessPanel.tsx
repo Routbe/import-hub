@@ -21,6 +21,7 @@ import {
   setLegalName,
   setUserVerifiedStatus,
 } from "@/lib/admin-access.functions";
+import { verifiedHandleSuggestionList } from "@/lib/verified-handle";
 
 type Grant = Awaited<ReturnType<typeof listAdminAccess>>[number];
 type Insight = Awaited<ReturnType<typeof getUserInsightForAdmin>>;
