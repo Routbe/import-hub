@@ -477,18 +477,19 @@ export default function Admin() {
   const searchTimer = useRef<number | undefined>(undefined);
   const [health, setHealth] = useState<Awaited<ReturnType<typeof getSystemHealth>> | null>(null);
   // KPI-drilldown: op welke tegel is geklikt en welke profielen horen daarbij.
-  const [kpiDrill, setKpiDrill] = useState<{
-    metric:
-      | "activeUsers"
-      | "pendingVerifications"
-      | "incompletePayments"
-      | "pendingSepaPayments"
-      | "failedAliasSyncs";
-    label: string;
-  } | null>(null);
+  const [kpiDrill, setKpiDrill] = useState<{ metric: KpiMetric; label: string } | null>(null);
   const [kpiRows, setKpiRows] = useState<Awaited<ReturnType<typeof getSystemHealthRows>> | null>(
     null,
   );
+
+  /** Opent de lijst met profielen achter een KPI-tegel. */
+  const openKpiDrill = (metric: KpiMetric, label: string) => {
+    setKpiDrill({ metric, label });
+    setKpiRows(null);
+    void loadHealthRows({ data: { metric } })
+      .then((rows) => setKpiRows(rows))
+      .catch(() => setKpiRows([]));
+  };
   const [activeTab, setActiveTab] = useState("users");
   const { t } = useTranslation();
   const [viewAsUser, setViewAsUser] = useState<UserRow | null>(null);
@@ -1304,7 +1305,7 @@ export default function Admin() {
                   : t("admin.kpi.not_configured"),
                 null,
               ],
-            ] as Array<[string, string | number, typeof kpiDrill extends null ? never : NonNullable<typeof kpiDrill>["metric"] | null]>).map(([label, value, metric]) => (
+            ] as Array<[string, string | number, KpiMetric | null]>).map(([label, value, metric]) => (
               <div key={label} className="space-y-0.5">
                 <p className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground">
                   <Activity className="h-3 w-3" aria-hidden /> {label}
