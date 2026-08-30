@@ -106,6 +106,10 @@ import {
 } from "@/components/ui/accordion";
 import { AvatarFramePicker } from "@/components/studio/AvatarFramePicker";
 import { VERIFIED_STRUCTURE_MESSAGE } from "@/lib/verified-handle";
+import { strictHandleIssue } from "@/lib/handle-validation";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { HandleErrorBanner } from "@/components/HandleValidationMessage";
 import { VerifiedHandleBuilder } from "@/components/settings/VerifiedHandleBuilder";
 import { FavoritesEditor } from "@/components/dashboard/FavoritesEditor";
 import { MAX_FAVORITES } from "@/lib/favorites";
@@ -237,6 +241,8 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [dirty, setDirty] = useState(false);
+  const queryClient = useQueryClient();
+  const router = useRouter();
   const [handle, setHandle] = useState("");
   const [claimed, setClaimed] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState("");
@@ -391,8 +397,14 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
     legalName,
     identityMode: prefs.identityMode,
   };
+  // Strikte platformregels (tekens, lengte, systeemwoorden, alias-cijfers) —
+  // deze blokkeren het opslaan volledig.
+  const strictIssue = strictHandleIssue(handle, { alias });
   const handleProblem = normalized ? handleIssue(normalized, handleCtx) : null;
-  const handleOk = isValidHandle(normalized) && !reserved && !handleProblem;
+  const handleOk =
+    isValidHandle(normalized) && !reserved && !handleProblem && !strictIssue;
+  /** Een reeds opgeslagen handle die niet meer aan de richtlijnen voldoet. */
+  const storedHandleInvalid = claimed ? strictHandleIssue(claimed, { alias }) : null;
   // Volg de actieve identiteitsruimte; schone root-URLs blijven Pro-only.
   const urlStyle = alias ? "u" : effectiveUrlStyle(
     identitySpace === "verified" ? "clean" : rawUrlStyle === "clean" || rawUrlStyle === "clean_at" ? "u" : rawUrlStyle,
@@ -519,6 +531,10 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
       return toast.error(result.reason ?? "Saving failed");
     }
     setClaimed(normalized);
+    // Handle direct live: publieke cache leegmaken zodat rout.be/<handle>
+    // meteen rendert zonder herlaad of serverherstart.
+    void queryClient.invalidateQueries({ queryKey: ["public-profile", normalized] });
+    void router.invalidate();
     setDirty(false);
     setSavedAt(Date.now());
     if (!silent) toast.success("Studio saved");
@@ -674,6 +690,9 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
 
   return (
     <div className={cn("flex flex-1 flex-col space-y-4", showSaveBar && "pb-16 lg:pb-4")}>
+      {storedHandleInvalid && (
+        <HandleErrorBanner message="Je huidige gebruikersnaam voldoet niet aan de nieuwe richtlijnen. Kies een nieuwe geldige handle om je profiel online te houden." />
+      )}
       {/* Compacte studiokop: tier-balk en tabs blijven bij het scrollen staan en
           nemen samen nauwelijks hoogte in, zodat de live preview hoger begint. */}
       {/* RIJ 1 — profielstatus & URL-balk */}
@@ -1903,6 +1922,7 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
                     className="input-field h-11 min-w-0 flex-1 rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-[invalid=true]:border-destructive"
                   />
                 </div>
+                {strictIssue && <HandleErrorBanner message={strictIssue} className="mt-3" />}
                 {normalized && (
                   <p className="mt-2 break-all text-xs">
                     {!handleOk ? (
