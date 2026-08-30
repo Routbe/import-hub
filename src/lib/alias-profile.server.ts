@@ -127,6 +127,8 @@ export async function isAliasHandleFree(rawHandle: string, userId: string | null
   const handle = normalizeHandle(rawHandle);
   if (!handle) return { ok: false, reason: "invalid" as const };
   if (isReservedHandle(handle)) return { ok: false, reason: "reserved" as const };
+  await ensureAliasTable();
+
 
   const rootRows = (await sql`
     select id from public.profiles where lower(username) = ${handle} limit 1
