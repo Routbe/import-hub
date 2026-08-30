@@ -29,6 +29,7 @@ import { BadgeShowcase } from "@/components/profile/BadgeShowcase";
 import { VerifiedInfoDialog } from "@/components/profile/VerifiedInfoDialog";
 import { monthYear } from "@/components/profile/VerifiedBadgePopover";
 import { ProfileBadge } from "@/components/profile/ProfileBadge";
+import { EarlyBelieverBadge } from "@/components/profile/EarlyBelieverBadge";
 import {
   backgroundLayers,
   bannerStyleOf,
