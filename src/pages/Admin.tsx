@@ -1291,24 +1291,36 @@ export default function Admin() {
             data-testid="admin-health-kpis"
             className="grid grid-cols-2 gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-5"
           >
-            {[
-              [t("admin.kpi.active_users"), health.activeUsers],
-              [t("admin.kpi.pending_verifications"), health.pendingVerifications],
-              [t("admin.kpi.incomplete_payments"), health.incompletePayments],
-              [t("admin.kpi.pending_sepa"), health.pendingSepaPayments],
-              [t("admin.kpi.failed_alias"), health.failedAliasSyncs],
+            {([
+              [t("admin.kpi.active_users"), health.activeUsers, "activeUsers"],
+              [t("admin.kpi.pending_verifications"), health.pendingVerifications, "pendingVerifications"],
+              [t("admin.kpi.incomplete_payments"), health.incompletePayments, "incompletePayments"],
+              [t("admin.kpi.pending_sepa"), health.pendingSepaPayments, "pendingSepaPayments"],
+              [t("admin.kpi.failed_alias"), health.failedAliasSyncs, "failedAliasSyncs"],
               [
                 t("admin.kpi.improvmx"),
                 health.improvmxConfigured
                   ? t("admin.kpi.configured")
                   : t("admin.kpi.not_configured"),
+                null,
               ],
-            ].map(([label, value]) => (
-              <div key={label as string} className="space-y-0.5">
+            ] as Array<[string, string | number, typeof kpiDrill extends null ? never : NonNullable<typeof kpiDrill>["metric"] | null]>).map(([label, value, metric]) => (
+              <div key={label} className="space-y-0.5">
                 <p className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-muted-foreground">
                   <Activity className="h-3 w-3" aria-hidden /> {label}
                 </p>
-                <p className="text-lg font-semibold">{value}</p>
+                {metric ? (
+                  <button
+                    type="button"
+                    onClick={() => openKpiDrill(metric, label)}
+                    className="text-lg font-semibold underline decoration-dotted underline-offset-4 hover:text-primary"
+                    title="Toon de profielen achter dit getal"
+                  >
+                    {value}
+                  </button>
+                ) : (
+                  <p className="text-lg font-semibold">{value}</p>
+                )}
               </div>
             ))}
           </section>
