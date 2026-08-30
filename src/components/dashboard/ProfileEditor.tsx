@@ -106,7 +106,7 @@ import {
 } from "@/components/ui/accordion";
 import { AvatarFramePicker } from "@/components/studio/AvatarFramePicker";
 import { VERIFIED_STRUCTURE_MESSAGE } from "@/lib/verified-handle";
-import { strictHandleIssue } from "@/lib/handle-validation";
+import { strictHandleIssue, MSG_ALIAS_DIGITS, ALIAS_DIGITS_HINT } from "@/lib/handle-validation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { HandleErrorBanner } from "@/components/HandleValidationMessage";
@@ -1895,9 +1895,22 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
                 <AccordionContent className="space-y-4 pb-5">
               <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
 
-                <h2 className="text-lg font-medium">Handle & Identifier</h2>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg font-medium">
+                    {alias
+                      ? "Privacy Alias (rout.be/u/[alias])"
+                      : "Geverifieerde Handle (rout.be/[handle])"}
+                  </h2>
+                  {alias && (
+                    <span className="rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      minimaal 2 cijfers
+                    </span>
+                  )}
+                </div>
                 <p id="handle-help" className="mt-1 text-xs text-muted-foreground">
-                  {handleRuleHint(handleCtx)}
+                  {alias
+                    ? "Kies vrij een pseudoniem. Enkel kleine letters, cijfers en . - _ — met minstens 2 cijfers."
+                    : handleRuleHint(handleCtx)}
                 </p>
                 <div className="mt-3 flex min-w-0 items-center gap-2">
                   <span className="shrink-0 font-mono text-sm text-muted-foreground">
@@ -1922,7 +1935,14 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
                     className="input-field h-11 min-w-0 flex-1 rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-[invalid=true]:border-destructive"
                   />
                 </div>
-                {strictIssue && <HandleErrorBanner message={strictIssue} className="mt-3" />}
+                {strictIssue && (
+                  <HandleErrorBanner
+                    message={
+                      alias && strictIssue === MSG_ALIAS_DIGITS ? ALIAS_DIGITS_HINT : strictIssue
+                    }
+                    className="mt-3"
+                  />
+                )}
                 {normalized && (
                   <p className="mt-2 break-all text-xs">
                     {!handleOk ? (
@@ -1942,7 +1962,7 @@ export function ProfileEditor({ variant = "verified" }: { variant?: ProfileVaria
                     )}
                   </p>
                 )}
-                {verified && (
+                {verified && !alias && (
                   <div className="mt-4">
                     <VerifiedHandleBuilder
                       legalName={legalName}

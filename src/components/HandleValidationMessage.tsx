@@ -32,7 +32,7 @@ export function HandleErrorBanner({
       <span aria-hidden className="text-base leading-none">
         ❗
       </span>
-      <span className="min-w-0 flex-1 break-words">{message.replace(/^❗\s*/, "")}</span>
+      <span className="min-w-0 flex-1 break-words">{message.replace(/^[❗⚠️🔴]+\s*/u, "")}</span>
     </div>
   );
 }
