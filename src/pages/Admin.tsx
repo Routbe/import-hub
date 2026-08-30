@@ -2963,6 +2963,51 @@ export default function Admin() {
 
       </div>
 
+      {/* KPI-drilldown: profielen achter een getal ------------------------ */}
+      <Dialog open={Boolean(kpiDrill)} onOpenChange={(open) => !open && setKpiDrill(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{kpiDrill?.label}</DialogTitle>
+            <DialogDescription>
+              {kpiRows === null
+                ? "Profielen laden…"
+                : `${kpiRows.length} profiel${kpiRows.length === 1 ? "" : "en"}`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[55vh] space-y-1 overflow-y-auto">
+            {kpiRows?.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Geen profielen gevonden.</p>
+            ) : null}
+            {(kpiRows ?? []).map((row) => (
+              <div
+                key={`${row.userId}-${row.detail ?? ""}`}
+                className="flex items-center justify-between gap-3 rounded-lg border border-border/60 px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">
+                    {row.displayName || row.username || row.userId}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {row.username ? `@${row.username}` : row.userId}
+                    {row.detail ? ` · ${row.detail}` : ""}
+                  </p>
+                </div>
+                {row.username ? (
+                  <a
+                    href={`/${row.username}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 text-xs underline"
+                  >
+                    Profiel
+                  </a>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Reject a payment ------------------------------------------------ */}
       <Dialog
         open={Boolean(inboundDetail)}
