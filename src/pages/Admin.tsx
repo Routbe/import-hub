@@ -476,6 +476,14 @@ export default function Admin() {
 
   const searchTimer = useRef<number | undefined>(undefined);
   const [health, setHealth] = useState<Awaited<ReturnType<typeof getSystemHealth>> | null>(null);
+  // KPI-drilldown: op welke tegel is geklikt en welke profielen horen daarbij.
+  const [kpiDrill, setKpiDrill] = useState<{
+    metric: Parameters<typeof getSystemHealthRows>[0]["data"]["metric"];
+    label: string;
+  } | null>(null);
+  const [kpiRows, setKpiRows] = useState<Awaited<ReturnType<typeof getSystemHealthRows>> | null>(
+    null,
+  );
   const [activeTab, setActiveTab] = useState("users");
   const { t } = useTranslation();
   const [viewAsUser, setViewAsUser] = useState<UserRow | null>(null);
