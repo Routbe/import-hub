@@ -6,6 +6,7 @@ import { sql } from "@/lib/neon";
 import { writeAudit } from "./admin.server";
 import { normalizeLegalName } from "./legal-name";
 import { verifiedHandleError, verifiedHandleSuggestionList } from "./verified-handle";
+import { sendVerificationApproved, sendVerificationRejected } from "@/lib/brevo/client";
 
 type Row = Record<string, unknown>;
 
@@ -373,6 +374,8 @@ export async function setUserVerified(opts: {
   /** Wettelijke naam; verplicht bij verifiëren, want die bepaalt de handle. */
   firstName?: string;
   lastName?: string;
+  /** Optionele reden die in de afwijzingsmail komt. */
+  reason?: string | null;
 }) {
   const first = (opts.firstName ?? "").trim();
   const last = (opts.lastName ?? "").trim();
@@ -397,7 +400,8 @@ export async function setUserVerified(opts: {
   }
 
   const rows = (await sql`
-    select verified_legal_name, legal_first_name, legal_last_name, username
+    select verified_legal_name, legal_first_name, legal_last_name, username,
+           coalesce(forwarding_email, email) as email, preferred_language
       from public.profiles where id = ${opts.userId} limit 1
   `) as Row[];
   const row = rows[0];
@@ -482,6 +486,30 @@ export async function setUserVerified(opts: {
     targetLabel: (row["username"] as string | null) ?? null,
     notes: legalName || null,
   });
+
+  // Brevo-dispatch: goedkeuring (blauw vinkje) of afwijzing van de verificatie.
+  const notifyEmail = (row["email"] as string | null) ?? null;
+  const notifyLanguage = (row["preferred_language"] as string | null) ?? "nl";
+  if (notifyEmail) {
+    const handle = promotedHandle ?? ((row["username"] as string | null) ?? "");
+    const origin = (process.env["PUBLIC_SITE_URL"] ?? "https://rout.be").replace(/\/$/, "");
+    if (opts.verified) {
+      await sendVerificationApproved({
+        to: notifyEmail,
+        language: notifyLanguage,
+        legalName,
+        handle,
+        profileUrl: `${origin}/${handle}`,
+      }).catch(() => undefined);
+    } else {
+      await sendVerificationRejected({
+        to: notifyEmail,
+        language: notifyLanguage,
+        name: legalName || handle,
+        reason: opts.reason ?? null,
+      }).catch(() => undefined);
+    }
+  }
 
   return { ok: true as const, verified: opts.verified, legalName, promotedHandle };
 }
